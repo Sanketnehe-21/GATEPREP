@@ -1,1 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Someone Special 💖</title>
+    <style>
+        body {
+            background: linear-gradient(to right, #ff758c, #ff7eb3);
+            font-family: Arial, sans-serif;
+            text-align: center;
+            color: white;
+            overflow: hidden;
+            padding: 50px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        h1 {
+            font-size: 2.5em;
+            animation: fadeIn 2s ease-in-out;
+        }
+        p {
+            font-size: 1.2em;
+            margin: 20px;
+        }
+        button {
+            background: white;
+            color: #ff758c;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: #ffebeb;
+        }
+        #secretMessage {
+            display: none;
+            font-size: 1.5em;
+            margin-top: 20px;
+            animation: fadeIn 2s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .heart {
+            position: absolute;
+            color: red;
+            font-size: 24px;
+            animation: fall linear infinite;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+        .blast-heart {
+            position: absolute;
+            color: red;
+            font-size: 30px;
+            opacity: 1;
+            animation: blast 1s ease-out forwards;
+        }
+        @keyframes blast {
+            0% { transform: scale(1) translate(0, 0); opacity: 1; }
+            100% { transform: scale(2) translate(var(--x), var(--y)); opacity: 0; }
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 20px;
+                text-align: center;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            p {
+                font-size: 1em;
+            }
+            button {
+                font-size: 1em;
+                padding: 10px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Hey, Beautiful! ❤️</h1>
+    <p>I've been meaning to tell you something...</p>
+    <button onclick="showMessage()">Click Here</button>
+    <p id="secretMessage">You're the most amazing person, and I can't stop thinking about you! 💕</p>
+    <script>
+        function showMessage() {
+            document.getElementById("secretMessage").style.display = "block";
+            heartBlast();
+        }
+        function createHeart() {
+            const heart = document.createElement("div");
+            heart.innerHTML = "❤️";
+            heart.classList.add("heart");
+            document.body.appendChild(heart);
+            const size = Math.random() * 20 + 10;
+            heart.style.fontSize = size + "px";
+            heart.style.left = Math.random() * 100 + "vw";
+            heart.style.animationDuration = Math.random() * 3 + 2 + "s";
+            setTimeout(() => {
+                heart.remove();
+            }, 5000);
+        }
+        function heartBlast() {
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            for (let i = 0; i < 15; i++) {
+                const heart = document.createElement("div");
+                heart.innerHTML = "❤️";
+                heart.classList.add("blast-heart");
+                heart.style.left = `${centerX}px`;
+                heart.style.top = `${centerY}px`;
+                const angle = Math.random() * 2 * Math.PI;
+                const distance = Math.random() * 150 + 50;
+                heart.style.setProperty("--x", `${Math.cos(angle) * distance}px`);
+                heart.style.setProperty("--y", `${Math.sin(angle) * distance}px`);
+                document.body.appendChild(heart);
+                setTimeout(() => {
+                    heart.remove();
+                }, 1000);
+            }
+        }
+        setInterval(createHeart, 200);
+    </script>
+</body>
+</html>
 
