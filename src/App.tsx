@@ -337,7 +337,9 @@ export default function App() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && Array.isArray(parsed.weeks) && parsed.weeks.length > 0) {
-          return parsed.weeks;
+          // Validate that tasks exist and have valid structure
+          const valid = parsed.weeks.every((w: any) => w && Array.isArray(w.tasks));
+          if (valid) return parsed.weeks;
         }
       }
     } catch (e) {
@@ -1011,11 +1013,12 @@ export default function App() {
                         </div>
                       ) : (
                         visibleTasks.map((task) => {
-                          const categoryDetails = {
+                          const categoryMap: Record<string, { icon: React.ReactNode; name: string; bg: string; border: string; color: string }> = {
                             night_deep_focus: { icon: <Moon size={14} />, name: 'Night Focus (3h)', bg: '#EAECEE', border: '#4B5267', color: '#4B5267' },
-                            office_micro_learning: { icon: <Briefcase size={14} />, name: 'Office Micro (15m)', bg: '#E8F8F5', border: '#2D5A27', color: '#2D5A27' },
-                            weekend_war: { icon: <Swords size={14} />, name: 'Weekend War (Sprint)', bg: '#FADBD8', border: '#C85A32', color: '#C85A32' }
-                          }[task.category];
+                            office_micro_learning: { icon: <Briefcase size={14} />, name: 'Office Micro (1h)', bg: '#E8F8F5', border: '#2D5A27', color: '#2D5A27' },
+                            weekend_war: { icon: <Swords size={14} />, name: 'Weekend War (8h)', bg: '#FADBD8', border: '#C85A32', color: '#C85A32' }
+                          };
+                          const categoryDetails = categoryMap[task.category] || categoryMap.night_deep_focus;
 
                           return (
                             <div
