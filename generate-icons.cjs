@@ -1,0 +1,14 @@
+const fs = require('fs');
+
+const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="96" fill="#8C4A27" />
+  <rect x="24" y="24" width="464" height="464" rx="72" fill="#F5EEDC" stroke="#2C1E16" stroke-width="16" />
+  <rect x="48" y="48" width="416" height="416" rx="56" fill="#E8DFC8" stroke="#8C5E3C" stroke-width="8" stroke-dasharray="16,16" />
+  <text x="256" y="210" text-anchor="middle" fill="#8C4A27" font-family="sans-serif" font-weight="bold" font-size="72">GATE CS</text>
+  <text x="256" y="320" text-anchor="middle" fill="#2D5A27" font-family="monospace" font-weight="bold" font-size="96">2027</text>
+  <circle cx="256" cy="400" r="24" fill="#D49B35" stroke="#2C1E16" stroke-width="4" />
+</svg>`;
+
+fs.writeFileSync('public/pwa-192.png', svgContent);
+fs.writeFileSync('public/pwa-512.png', svgContent);
+console.log('Icons generated successfully.');

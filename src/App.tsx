@@ -367,6 +367,33 @@ export default function App() {
   const [ioModalOpen, setIoModalOpen] = useState(false);
   const [importJsonText, setImportJsonText] = useState('');
 
+  // PWA Install Prompt State
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isInstallable, setIsInstallable] = useState(false);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setIsInstallable(true);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
+
+  const handleInstallApp = async () => {
+    if (!deferredPrompt) {
+      alert("To install: Click 'Add to Home Screen' or your browser's menu -> Install App.");
+      return;
+    }
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setIsInstallable(false);
+      setDeferredPrompt(null);
+    }
+  };
+
   // Body Scroll Lock for Modals (Accessibility)
   useEffect(() => {
     if (scratchpadTask || ioModalOpen) {
@@ -592,6 +619,18 @@ export default function App() {
                 }}>
                   AIR &lt;100 Blueprint
                 </span>
+                <button
+                  onClick={handleInstallApp}
+                  aria-label="Install web application"
+                  style={{
+                    fontSize: '11px', background: '#2D5A27', color: '#FFF8EA',
+                    padding: '4px 10px', borderRadius: '12px', fontWeight: 'bold',
+                    border: '1px solid #2C1E16', cursor: 'pointer', display: 'flex',
+                    alignItems: 'center', gap: '4px', boxShadow: '2px 2px 0px #2C1E16'
+                  }}
+                >
+                  📲 Install App
+                </button>
               </div>
               <h1 className="fluid-h1" style={{
                 margin: '8px 0 0 0', color: '#2C1E16', fontWeight: 'bold',
