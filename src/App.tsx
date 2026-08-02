@@ -664,13 +664,17 @@ export default function App() {
             </div>
           </div>
 
-          {/* Phase Tabs (Accessible Tablist) */}
+          {/* Phase Tabs (Fully Responsive Wrapping Tablist) */}
           <div
             role="tablist"
             aria-label="Phase Filter Tabs"
             style={{
-              display: 'flex', gap: '8px', marginTop: '20px', overflowX: 'auto',
-              paddingBottom: '6px', scrollbarWidth: 'thin'
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '8px',
+              marginTop: '20px',
+              width: '100%',
+              boxSizing: 'border-box'
             }}
           >
             {[
@@ -690,23 +694,23 @@ export default function App() {
                   onClick={() => setActivePhase(tab.id)}
                   className="touch-target"
                   style={{
-                    padding: '8px 14px',
-                    borderRadius: '8px 8px 0 0',
+                    flex: '1 1 140px',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
                     border: '2px solid #2C1E16',
-                    borderBottom: isSelected ? 'none' : '2px solid #2C1E16',
-                    background: isSelected ? '#F5EEDC' : '#D9CBBB',
-                    color: isSelected ? '#8C4A27' : '#664A38',
+                    background: isSelected ? '#8C4A27' : '#D9CBBB',
+                    color: isSelected ? '#FFF8EA' : '#2C1E16',
                     fontWeight: 'bold',
                     fontSize: '13px',
                     cursor: 'pointer',
-                    boxShadow: isSelected ? '0 -2px 5px rgba(0,0,0,0.1)' : 'none',
+                    boxShadow: isSelected ? '3px 3px 0px #2C1E16' : 'none',
                     transition: 'all 0.2s ease',
-                    whiteSpace: 'nowrap',
-                    flexShrink: 0
+                    textAlign: 'center',
+                    boxSizing: 'border-box'
                   }}
                 >
                   <div>{tab.label}</div>
-                  <div style={{ fontSize: '10px', color: isSelected ? '#2C1E16' : '#886A58', fontWeight: 'normal' }}>{tab.desc}</div>
+                  <div style={{ fontSize: '10px', color: isSelected ? '#F2E7D5' : '#664A38', fontWeight: 'normal', marginTop: '2px' }}>{tab.desc}</div>
                 </button>
               );
             })}
