@@ -1,17 +1,37 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
     <title>GATE CS 2027 — Execution Engine & Syllabus Tracker</title>
     <meta name="description" content="Production-ready GATE CS 2027 preparation tracker with 24-week roadmap, Pomodoro timer, and PYQ tracker." />
+    
+    <!-- PWA Web App Meta & Manifest -->
+    <link rel="manifest" href="/GATEPREP/manifest.json" />
+    <meta name="theme-color" content="#8C4A27" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="GATE CS 2027" />
+    <link rel="apple-touch-icon" href="/GATEPREP/icon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/GATEPREP/icon.svg" />
+
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <script type="module" crossorigin src="/GATEPREP/assets/index-CQWSld2L.js"></script>
+    <script type="module" crossorigin src="/GATEPREP/assets/index-DXfpHJCu.js"></script>
     <link rel="stylesheet" crossorigin href="/GATEPREP/assets/index-Cyb_7tIz.css">
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/GATEPREP/sw.js')
+            .then(reg => console.log('SW registered:', reg.scope))
+            .catch(err => console.error('SW registration failed:', err));
+        });
+      }
+    </script>
   </body>
 </html>
