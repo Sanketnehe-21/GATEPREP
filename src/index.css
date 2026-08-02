@@ -1,20 +1,119 @@
-/* src/index.css */
+/* src/index.css - Senior Engineering Responsive & Accessibility Engine */
 @import "tailwindcss";
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --color-bg-canvas: #F5EEDC;
+  --color-bg-header: #E8DFC8;
+  --color-bg-card: #F9F3EB;
+  --color-bg-card-alt: #FFF8EA;
+  --color-text-main: #2C1E16;
+  --color-text-muted: #664A38;
+  --color-accent-terracotta: #8C4A27;
+  --color-accent-forest: #2D5A27;
+  --color-accent-flame: #C85A32;
+  --color-accent-gold: #D49B35;
+  --color-accent-navy: #4B5267;
+  --border-dark: #2C1E16;
+  --shadow-retro: 3px 3px 0px #C4B292;
+  --shadow-retro-lg: 4px 4px 0px #C4B292;
+  --shadow-retro-dark: 4px 4px 0px #2C1E16;
 
-html { scroll-behavior: smooth; }
-
-body {
-  background: #1a1208;
-  color: #e8d5b0;
-  font-family: 'Georgia', 'Times New Roman', serif;
-  min-height: 100vh;
+  /* Spacing Scale */
+  --space-8: 8px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-48: 48px;
+  --space-64: 64px;
+  --space-96: 96px;
+  --space-128: 128px;
 }
 
-#root { min-height: 100vh; }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: #1a1208; }
-::-webkit-scrollbar-thumb { background: #5c3d1e; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #7a5230; }
+html, body {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  background-color: var(--color-bg-canvas);
+  color: var(--color-text-main);
+  font-family: 'Georgia', 'Times New Roman', serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Accessibility Focus States */
+:focus-visible {
+  outline: 3px solid var(--color-accent-terracotta);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Typography Fluid Clamps */
+.fluid-h1 {
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  line-height: 1.25;
+}
+
+.fluid-h2 {
+  font-size: clamp(1.25rem, 3vw, 1.8rem);
+  line-height: 1.3;
+}
+
+.fluid-body {
+  font-size: clamp(0.938rem, 1.5vw, 1rem);
+  line-height: 1.6;
+}
+
+.fluid-caption {
+  font-size: clamp(0.75rem, 1.2vw, 0.875rem);
+  line-height: 1.4;
+}
+
+/* Touch Target Minimum (48px) for Mobile Interactivity */
+button, input, select, textarea {
+  font-family: inherit;
+}
+
+.touch-target {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg-header);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-accent-terracotta);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-dark);
+}
+
+/* Motion Preference */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

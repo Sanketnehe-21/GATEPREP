@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   Moon, Briefcase, Swords, Calendar, Clock, Target, CheckSquare, 
   Square, FileText, Download, Upload, RotateCcw, Play, Pause, 
-  Sparkles, Filter, Bookmark, BookOpen, Flame, Ban, Check, X,
-  ChevronDown, ChevronUp, RefreshCw
+  Filter, Flame, Ban, X, ChevronDown, ChevronUp, Menu
 } from 'lucide-react';
 
 // --- TYPES ---
@@ -366,6 +365,31 @@ export default function App() {
   const [ioModalOpen, setIoModalOpen] = useState(false);
   const [importJsonText, setImportJsonText] = useState('');
 
+  // Body Scroll Lock for Modals (Accessibility)
+  useEffect(() => {
+    if (scratchpadTask || ioModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [scratchpadTask, ioModalOpen]);
+
+  // Keyboard Navigation: Escape key listener for Modals
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (scratchpadTask) setScratchpadTask(null);
+        if (ioModalOpen) setIoModalOpen(false);
+        if (timerOpen) setTimerOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [scratchpadTask, ioModalOpen, timerOpen]);
+
   // Persist State to LocalStorage
   useEffect(() => {
     try {
@@ -414,7 +438,7 @@ export default function App() {
   };
 
   // Toggle Task Completion
-  const toggleTask = (weekNumber: number, taskId: string) => {
+  const toggleTask = useCallback((weekNumber: number, taskId: string) => {
     setWeeks(prev => prev.map(w => {
       if (w.weekNumber !== weekNumber) return w;
       return {
@@ -430,10 +454,10 @@ export default function App() {
         })
       };
     }));
-  };
+  }, []);
 
   // Save Notes to Task
-  const saveScratchpadNotes = () => {
+  const saveScratchpadNotes = useCallback(() => {
     if (!scratchpadTask) return;
     setWeeks(prev => prev.map(w => {
       if (w.weekNumber !== scratchpadTask.weekNumber) return w;
@@ -443,25 +467,38 @@ export default function App() {
       };
     }));
     setScratchpadTask(null);
-  };
+  }, [scratchpadTask, notesText]);
 
-  // Stats Calculations
-  const allTasks = weeks.flatMap(w => w.tasks);
-  const completedTasks = allTasks.filter(t => t.completed);
-  const totalPyqsSolved = completedTasks.reduce((acc, t) => acc + (t.pyqTarget || 0), 0);
-  const totalTasksCount = allTasks.length;
-  const overallProgressPct = totalTasksCount > 0 ? Math.round((completedTasks.length / totalTasksCount) * 100) : 0;
+  // Memoized Stats Calculations for Performance
+  const { allTasks, completedTasks, totalPyqsSolved, totalTasksCount, overallProgressPct } = useMemo(() => {
+    const all = weeks.flatMap(w => w.tasks);
+    const completed = all.filter(t => t.completed);
+    const pyqs = completed.reduce((acc, t) => acc + (t.pyqTarget || 0), 0);
+    const total = all.length;
+    const pct = total > 0 ? Math.round((completed.length / total) * 100) : 0;
+    return {
+      allTasks: all,
+      completedTasks: completed,
+      totalPyqsSolved: pyqs,
+      totalTasksCount: total,
+      overallProgressPct: pct
+    };
+  }, [weeks]);
 
   // Countdown to GATE 2027 (Feb 1, 2027)
-  const gateTargetDate = new Date('2027-02-01T09:00:00');
-  const now = new Date();
-  const diffDays = Math.max(0, Math.ceil((gateTargetDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+  const diffDays = useMemo(() => {
+    const gateTargetDate = new Date('2027-02-01T09:00:00');
+    const now = new Date();
+    return Math.max(0, Math.ceil((gateTargetDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+  }, []);
 
-  // Filtered Weeks
-  const filteredWeeks = weeks.filter(w => {
-    if (activePhase !== 0 && w.phaseId !== activePhase) return false;
-    return true;
-  });
+  // Filtered Weeks (Memoized)
+  const filteredWeeks = useMemo(() => {
+    return weeks.filter(w => {
+      if (activePhase !== 0 && w.phaseId !== activePhase) return false;
+      return true;
+    });
+  }, [weeks, activePhase]);
 
   // Export JSON
   const handleExportJSON = () => {
@@ -505,6 +542,9 @@ export default function App() {
       backgroundSize: '24px 24px',
       color: '#2C1E16',
       minHeight: '100vh',
+      width: '100%',
+      maxWidth: '100vw',
+      overflowX: 'hidden',
       fontFamily: "'Georgia', 'Times New Roman', serif",
       paddingBottom: '120px'
     }}>
@@ -513,28 +553,30 @@ export default function App() {
         background: '#E8DFC8',
         borderBottom: '3px dashed #8C5E3C',
         boxShadow: '0 4px 15px rgba(44, 30, 22, 0.15)',
-        padding: '24px 16px',
-        position: 'relative'
+        padding: 'clamp(16px, 3vw, 24px) clamp(16px, 4vw, 32px)',
+        position: 'relative',
+        width: '100%',
+        boxSizing: 'border-box'
       }}>
         {/* Paper Tape Accents */}
         <div style={{
-          position: 'absolute', top: '-10px', left: '40px', width: '100px', height: '26px',
+          position: 'absolute', top: '-10px', left: 'clamp(10px, 5vw, 40px)', width: '90px', height: '24px',
           background: 'rgba(235, 220, 190, 0.7)', transform: 'rotate(-3deg)',
           border: '1px solid #C4B292', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', zIndex: 2
         }} />
         <div style={{
-          position: 'absolute', top: '-10px', right: '40px', width: '100px', height: '26px',
+          position: 'absolute', top: '-10px', right: 'clamp(10px, 5vw, 40px)', width: '90px', height: '24px',
           background: 'rgba(235, 220, 190, 0.7)', transform: 'rotate(2deg)',
           border: '1px solid #C4B292', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', zIndex: 2
         }} />
 
-        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', width: '100%' }}>
           {/* Top Title & Vintage Badge Row */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 <span style={{
-                  fontSize: '28px', background: '#8C4A27', color: '#FFF8EA',
+                  fontSize: 'clamp(20px, 3vw, 28px)', background: '#8C4A27', color: '#FFF8EA',
                   padding: '4px 12px', borderRadius: '4px', fontWeight: 'bold',
                   boxShadow: '2px 2px 0px #2C1E16', border: '1px solid #2C1E16',
                   fontFamily: 'monospace'
@@ -542,33 +584,33 @@ export default function App() {
                   GATE CS 2027
                 </span>
                 <span style={{
-                  fontSize: '12px', background: '#D49B35', color: '#2C1E16',
+                  fontSize: '11px', background: '#D49B35', color: '#2C1E16',
                   padding: '4px 8px', borderRadius: '12px', fontWeight: 'bold',
-                  border: '1px solid #2C1E16', textTransform: 'uppercase', letterSpacing: '1px'
+                  border: '1px solid #2C1E16', textTransform: 'uppercase', letterSpacing: '0.5px'
                 }}>
                   AIR &lt;100 Blueprint
                 </span>
               </div>
-              <h1 style={{
-                margin: '8px 0 0 0', fontSize: '24px', color: '#2C1E16', fontWeight: 'bold',
-                fontStyle: 'italic', textShadow: '1px 1px 0px #E5D5C0'
+              <h1 className="fluid-h1" style={{
+                margin: '8px 0 0 0', color: '#2C1E16', fontWeight: 'bold',
+                fontStyle: 'italic', textShadow: '1px 1px 0px #E5D5C0',
+                wordBreak: 'break-word'
               }}>
                 Execution Engine &amp; Syllabus Scrapbook
               </h1>
-              <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#664A38' }}>
+              <p className="fluid-caption" style={{ margin: '4px 0 0 0', color: '#664A38' }}>
                 Strict 24-Week Working Professional Blueprint (Aug 3, 2026 – Feb 2027)
               </p>
             </div>
 
             {/* Retro Stats Cards */}
-            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', width: '100%', maxWidth: '400px' }}>
               {/* Countdown Stamp */}
               <div style={{
-                background: '#F9F3EB', border: '2px dashed #8C4A27', borderRadius: '8px',
-                padding: '10px 14px', textAlign: 'center', boxShadow: '3px 3px 0px #C4B292',
-                minWidth: '100px'
+                flex: '1 1 100px', background: '#F9F3EB', border: '2px dashed #8C4A27', borderRadius: '8px',
+                padding: '10px 12px', textAlign: 'center', boxShadow: '3px 3px 0px #C4B292'
               }}>
-                <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#8C4A27', fontFamily: 'monospace' }}>
+                <div style={{ fontSize: 'clamp(20px, 3vw, 24px)', fontWeight: 'bold', color: '#8C4A27', fontFamily: 'monospace' }}>
                   {diffDays}
                 </div>
                 <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#664A38', textTransform: 'uppercase' }}>
@@ -578,12 +620,11 @@ export default function App() {
 
               {/* PYQ Target Stamp */}
               <div style={{
-                background: '#F9F3EB', border: '2px solid #2D5A27', borderRadius: '8px',
-                padding: '10px 14px', textAlign: 'center', boxShadow: '3px 3px 0px #C4B292',
-                minWidth: '120px'
+                flex: '1 1 120px', background: '#F9F3EB', border: '2px solid #2D5A27', borderRadius: '8px',
+                padding: '10px 12px', textAlign: 'center', boxShadow: '3px 3px 0px #C4B292'
               }}>
-                <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#2D5A27', fontFamily: 'monospace' }}>
-                  {totalPyqsSolved} <span style={{ fontSize: '12px', color: '#664A38' }}>/ 1260</span>
+                <div style={{ fontSize: 'clamp(18px, 2.5vw, 20px)', fontWeight: 'bold', color: '#2D5A27', fontFamily: 'monospace' }}>
+                  {totalPyqsSolved} <span style={{ fontSize: '11px', color: '#664A38' }}>/ 1260</span>
                 </div>
                 <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#2D5A27', textTransform: 'uppercase' }}>
                   🎯 PYQs Solved
@@ -592,15 +633,14 @@ export default function App() {
 
               {/* Progress Stamp */}
               <div style={{
-                background: '#F9F3EB', border: '2px solid #4B5267', borderRadius: '8px',
-                padding: '10px 14px', textAlign: 'center', boxShadow: '3px 3px 0px #C4B292',
-                minWidth: '110px'
+                flex: '1 1 100px', background: '#F9F3EB', border: '2px solid #4B5267', borderRadius: '8px',
+                padding: '10px 12px', textAlign: 'center', boxShadow: '3px 3px 0px #C4B292'
               }}>
-                <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#4B5267', fontFamily: 'monospace' }}>
+                <div style={{ fontSize: 'clamp(18px, 2.5vw, 20px)', fontWeight: 'bold', color: '#4B5267', fontFamily: 'monospace' }}>
                   {overallProgressPct}%
                 </div>
                 <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#4B5267', textTransform: 'uppercase' }}>
-                  Tasks Completed
+                  Completed
                 </div>
               </div>
             </div>
@@ -608,7 +648,7 @@ export default function App() {
 
           {/* Overall Vintage Progress Bar */}
           <div style={{ marginTop: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 'bold', color: '#664A38', marginBottom: '4px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 'bold', color: '#664A38', marginBottom: '4px', flexWrap: 'wrap' }}>
               <span>SCRAPBOOK COMPLETION TRACKER</span>
               <span>{completedTasks.length} / {totalTasksCount} TASKS DONE</span>
             </div>
@@ -624,11 +664,15 @@ export default function App() {
             </div>
           </div>
 
-          {/* Phase Tabs (Paper Tabs Aesthetic) */}
-          <div style={{
-            display: 'flex', gap: '8px', marginTop: '24px', overflowX: 'auto',
-            paddingBottom: '6px'
-          }}>
+          {/* Phase Tabs (Accessible Tablist) */}
+          <div
+            role="tablist"
+            aria-label="Phase Filter Tabs"
+            style={{
+              display: 'flex', gap: '8px', marginTop: '20px', overflowX: 'auto',
+              paddingBottom: '6px', scrollbarWidth: 'thin'
+            }}
+          >
             {[
               { id: 0, label: 'All 24 Weeks', desc: 'Full Roadmap' },
               { id: 1, label: 'Phase 1: Foundation', desc: 'Wk 1-4 (Aug 3-30)' },
@@ -640,7 +684,11 @@ export default function App() {
               return (
                 <button
                   key={tab.id}
+                  role="tab"
+                  aria-selected={isSelected}
+                  aria-label={tab.label}
                   onClick={() => setActivePhase(tab.id)}
+                  className="touch-target"
                   style={{
                     padding: '8px 14px',
                     borderRadius: '8px 8px 0 0',
@@ -653,7 +701,8 @@ export default function App() {
                     cursor: 'pointer',
                     boxShadow: isSelected ? '0 -2px 5px rgba(0,0,0,0.1)' : 'none',
                     transition: 'all 0.2s ease',
-                    whiteSpace: 'nowrap'
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0
                   }}
                 >
                   <div>{tab.label}</div>
@@ -665,23 +714,30 @@ export default function App() {
         </div>
       </header>
 
-      {/* STRATEGIC CONSTRAINTS & FILTER RIBBON */}
-      <main style={{ maxWidth: '1100px', margin: '24px auto', padding: '0 16px' }}>
-        {/* 3-Zone Blueprint Banner */}
+      {/* MAIN CONTAINER */}
+      <main style={{
+        maxWidth: '1280px', margin: '24px auto 0',
+        padding: '0 clamp(16px, 3vw, 32px)',
+        width: '100%',
+        boxSizing: 'border-box'
+      }}>
+        {/* 3-Zone Blueprint Banner Grid */}
         <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: '16px',
           marginBottom: '24px'
         }}>
           {/* Night Deep Focus Zone */}
           <div style={{
             background: '#F9F3EB', border: '2px solid #4B5267', borderRadius: '8px',
-            padding: '12px 14px', boxShadow: '3px 3px 0px #C4B292'
+            padding: '14px 16px', boxShadow: '3px 3px 0px #C4B292'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#4B5267', fontWeight: 'bold' }}>
               <Moon size={18} />
-              <span>Night Deep Focus Zone</span>
+              <span className="fluid-body">Night Deep Focus Zone</span>
             </div>
-            <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: '#664A38' }}>
+            <p className="fluid-caption" style={{ margin: '6px 0 0 0', color: '#664A38' }}>
               <strong>10:30 PM – 1:30 AM (3 Hrs Daily):</strong> Theory, proofs, algorithm execution.
             </p>
           </div>
@@ -689,13 +745,13 @@ export default function App() {
           {/* Office Micro-Learning Zone */}
           <div style={{
             background: '#F9F3EB', border: '2px solid #2D5A27', borderRadius: '8px',
-            padding: '12px 14px', boxShadow: '3px 3px 0px #C4B292'
+            padding: '14px 16px', boxShadow: '3px 3px 0px #C4B292'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#2D5A27', fontWeight: 'bold' }}>
               <Briefcase size={18} />
-              <span>Office Micro-Learning Zone</span>
+              <span className="fluid-body">Office Micro-Learning Zone</span>
             </div>
-            <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: '#664A38' }}>
+            <p className="fluid-caption" style={{ margin: '6px 0 0 0', color: '#664A38' }}>
               <strong>1 Hour Max Daily (10-15m bursts):</strong> Recursion, K-Map drills, GateQA app.
             </p>
           </div>
@@ -703,13 +759,13 @@ export default function App() {
           {/* Weekend War Zone */}
           <div style={{
             background: '#F9F3EB', border: '2px solid #C85A32', borderRadius: '8px',
-            padding: '12px 14px', boxShadow: '3px 3px 0px #C4B292'
+            padding: '14px 16px', boxShadow: '3px 3px 0px #C4B292'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#C85A32', fontWeight: 'bold' }}>
               <Swords size={18} />
-              <span>Weekend War Zone</span>
+              <span className="fluid-body">Weekend War Zone</span>
             </div>
-            <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: '#664A38' }}>
+            <p className="fluid-caption" style={{ margin: '6px 0 0 0', color: '#664A38' }}>
               <strong>Sat &amp; Sun (16 Hrs/Wk):</strong> PYQ sprints (50-80 Qs), weak areas, NAT mocks.
             </p>
           </div>
@@ -719,7 +775,8 @@ export default function App() {
         <div style={{
           background: '#E8DFC8', border: '2px solid #2C1E16', borderRadius: '8px',
           padding: '12px 16px', marginBottom: '24px', display: 'flex',
-          justify: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px'
+          justify: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px',
+          width: '100%', boxSizing: 'border-box'
         }}>
           {/* Zone Filter */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -734,9 +791,11 @@ export default function App() {
             ].map(z => (
               <button
                 key={z.id}
+                aria-label={`Filter by ${z.label}`}
                 onClick={() => setSelectedZone(z.id)}
+                className="touch-target"
                 style={{
-                  padding: '4px 10px', fontSize: '12px', borderRadius: '12px',
+                  padding: '6px 12px', fontSize: '12px', borderRadius: '12px',
                   border: '1px solid #2C1E16', cursor: 'pointer', fontWeight: 'bold',
                   background: selectedZone === z.id ? '#8C4A27' : '#F9F3EB',
                   color: selectedZone === z.id ? '#FFF8EA' : '#2C1E16'
@@ -757,9 +816,11 @@ export default function App() {
             ].map(st => (
               <button
                 key={st.id}
+                aria-label={`Filter by status ${st.label}`}
                 onClick={() => setSelectedStatus(st.id)}
+                className="touch-target"
                 style={{
-                  padding: '4px 10px', fontSize: '12px', borderRadius: '12px',
+                  padding: '6px 12px', fontSize: '12px', borderRadius: '12px',
                   border: '1px solid #2C1E16', cursor: 'pointer', fontWeight: 'bold',
                   background: selectedStatus === st.id ? '#2D5A27' : '#F9F3EB',
                   color: selectedStatus === st.id ? '#FFF8EA' : '#2C1E16'
@@ -771,11 +832,12 @@ export default function App() {
 
             <button
               onClick={() => setIoModalOpen(true)}
+              aria-label="Backup or restore data modal"
+              className="touch-target"
               style={{
-                padding: '4px 12px', fontSize: '12px', borderRadius: '6px',
+                padding: '6px 14px', fontSize: '12px', borderRadius: '6px',
                 background: '#D49B35', color: '#2C1E16', border: '1px solid #2C1E16',
-                fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px',
-                marginLeft: '8px'
+                fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px'
               }}
             >
               <Download size={14} /> Backup / Restore
@@ -809,20 +871,24 @@ export default function App() {
                   borderRadius: '10px',
                   boxShadow: '4px 4px 0px #C4B292',
                   overflow: 'hidden',
-                  transition: 'all 0.2s ease'
+                  transition: 'all 0.2s ease',
+                  width: '100%'
                 }}
               >
                 {/* Accordion Header Bar */}
-                <div
+                <button
+                  aria-expanded={isExpanded}
+                  aria-label={`Toggle Week ${week.weekNumber}: ${week.title}`}
                   onClick={() => setExpandedWeek(isExpanded ? null : week.weekNumber)}
                   style={{
-                    padding: '16px', background: isExpanded ? '#E8DFC8' : '#F9F3EB',
+                    width: '100%', padding: '16px', background: isExpanded ? '#E8DFC8' : '#F9F3EB',
                     cursor: 'pointer', display: 'flex', justifyContent: 'space-between',
                     alignItems: 'center', flexWrap: 'wrap', gap: '12px',
-                    borderBottom: isExpanded ? '2px solid #2C1E16' : 'none'
+                    border: 'none', borderBottom: isExpanded ? '2px solid #2C1E16' : 'none',
+                    textAlign: 'left'
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', flex: 1 }}>
                     <span style={{
                       background: '#8C4A27', color: '#FFF8EA', padding: '6px 12px',
                       borderRadius: '6px', fontWeight: 'bold', fontSize: '14px',
@@ -831,11 +897,11 @@ export default function App() {
                       Week {week.weekNumber}
                     </span>
 
-                    <div>
+                    <div style={{ flex: 1, minWidth: '200px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                        <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: '#2C1E16' }}>
+                        <h2 className="fluid-h2" style={{ margin: 0, fontWeight: 'bold', color: '#2C1E16', wordBreak: 'break-word' }}>
                           {week.title}
-                        </h3>
+                        </h2>
                         
                         {/* IIT Madras Pivot Tag */}
                         {week.iitMadrasPivots && week.iitMadrasPivots.length > 0 && (
@@ -855,17 +921,17 @@ export default function App() {
                             padding: '2px 8px', borderRadius: '10px', fontWeight: 'bold',
                             border: '1px solid #2C1E16', display: 'flex', alignItems: 'center', gap: '4px'
                           }}>
-                            <Ban size={12} /> Deprioritized Topics
+                            <Ban size={12} /> Deprioritized
                           </span>
                         )}
                       </div>
-                      <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#664A38' }}>
+                      <p className="fluid-caption" style={{ margin: '4px 0 0 0', color: '#664A38' }}>
                         📅 {week.startDate} to {week.endDate} • {week.missionObjective}
                       </p>
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
                     {/* Mini Progress */}
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#2C1E16', fontFamily: 'monospace' }}>
@@ -881,7 +947,7 @@ export default function App() {
 
                     {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                   </div>
-                </div>
+                </button>
 
                 {/* Accordion Expanded Body */}
                 {isExpanded && (
@@ -896,7 +962,7 @@ export default function App() {
                           key={idx}
                           style={{
                             background: '#E8DFC8', border: '1px solid #8C5E3C',
-                            color: '#2C1E16', padding: '2px 8px', borderRadius: '4px',
+                            color: '#2C1E16', padding: '3px 8px', borderRadius: '4px',
                             fontSize: '11px', fontWeight: 'bold'
                           }}
                         >
@@ -910,7 +976,7 @@ export default function App() {
                           key={`p_${idx}`}
                           style={{
                             background: '#FADBD8', border: '1px solid #C85A32',
-                            color: '#C85A32', padding: '2px 8px', borderRadius: '4px',
+                            color: '#C85A32', padding: '3px 8px', borderRadius: '4px',
                             fontSize: '11px', fontWeight: 'bold'
                           }}
                         >
@@ -924,7 +990,7 @@ export default function App() {
                           key={`o_${idx}`}
                           style={{
                             background: '#E5E7E9', border: '1px solid #664A38',
-                            color: '#664A38', padding: '2px 8px', borderRadius: '4px',
+                            color: '#664A38', padding: '3px 8px', borderRadius: '4px',
                             fontSize: '11px', fontWeight: 'bold', textDecoration: 'line-through'
                           }}
                         >
@@ -933,7 +999,7 @@ export default function App() {
                       ))}
                     </div>
 
-                    {/* Task Cards Grid */}
+                    {/* Task Cards Grid (Responsive 1-Column Grid) */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
                       {visibleTasks.length === 0 ? (
                         <div style={{ fontStyle: 'italic', color: '#664A38', fontSize: '13px', padding: '8px' }}>
@@ -959,28 +1025,35 @@ export default function App() {
                                 justifyContent: 'space-between',
                                 alignItems: 'flex-start',
                                 gap: '12px',
+                                flexWrap: 'wrap',
                                 boxShadow: task.completed ? 'none' : '2px 2px 0px #C4B292',
-                                opacity: task.completed ? 0.85 : 1
+                                opacity: task.completed ? 0.85 : 1,
+                                width: '100%',
+                                boxSizing: 'border-box'
                               }}
                             >
                               {/* Left Checkbox & Info */}
-                              <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', flex: 1 }}>
+                              <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', flex: '1 1 240px' }}>
                                 <button
+                                  aria-label={task.completed ? `Mark ${task.title} as incomplete` : `Mark ${task.title} as completed`}
                                   onClick={() => toggleTask(week.weekNumber, task.id)}
+                                  className="touch-target"
                                   style={{
                                     background: 'none', border: 'none', cursor: 'pointer',
-                                    padding: '0', marginTop: '2px', color: task.completed ? '#2D5A27' : '#2C1E16'
+                                    padding: '0', marginTop: '2px', color: task.completed ? '#2D5A27' : '#2C1E16',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center'
                                   }}
                                 >
-                                  {task.completed ? <CheckSquare size={22} /> : <Square size={22} />}
+                                  {task.completed ? <CheckSquare size={24} /> : <Square size={24} />}
                                 </button>
 
-                                <div>
+                                <div style={{ flex: 1 }}>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                                     <span style={{
                                       fontSize: '15px', fontWeight: 'bold',
                                       color: task.completed ? '#2D5A27' : '#2C1E16',
-                                      textDecoration: task.completed ? 'line-through' : 'none'
+                                      textDecoration: task.completed ? 'line-through' : 'none',
+                                      wordBreak: 'break-word'
                                     }}>
                                       {task.title}
                                     </span>
@@ -988,7 +1061,7 @@ export default function App() {
                                     {/* Category Stamp */}
                                     <span style={{
                                       background: categoryDetails.bg, border: `1px solid ${categoryDetails.border}`,
-                                      color: categoryDetails.color, fontSize: '10px', padding: '1px 6px',
+                                      color: categoryDetails.color, fontSize: '10px', padding: '2px 6px',
                                       borderRadius: '4px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px'
                                     }}>
                                       {categoryDetails.icon} {categoryDetails.name}
@@ -998,14 +1071,14 @@ export default function App() {
                                     {task.pyqTarget && (
                                       <span style={{
                                         background: '#D49B35', color: '#2C1E16', fontSize: '10px',
-                                        padding: '1px 6px', borderRadius: '4px', fontWeight: 'bold', border: '1px solid #2C1E16'
+                                        padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold', border: '1px solid #2C1E16'
                                       }}>
                                         🎯 {task.pyqTarget} PYQs Target
                                       </span>
                                     )}
                                   </div>
 
-                                  <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#553C2B' }}>
+                                  <p style={{ margin: '6px 0 0 0', fontSize: '13px', color: '#553C2B', lineHeight: 1.5 }}>
                                     {task.description}
                                   </p>
 
@@ -1014,7 +1087,7 @@ export default function App() {
                                     <div style={{
                                       marginTop: '8px', padding: '6px 10px', background: '#F5EEDC',
                                       borderLeft: '3px solid #8C4A27', fontSize: '11px', color: '#2C1E16',
-                                      fontStyle: 'italic'
+                                      fontStyle: 'italic', wordBreak: 'break-word'
                                     }}>
                                       <strong>Notes:</strong> {task.notes}
                                     </div>
@@ -1024,18 +1097,21 @@ export default function App() {
 
                               {/* Scratchpad Action Button */}
                               <button
+                                aria-label={`Open scratchpad for ${task.title}`}
                                 onClick={() => {
                                   setScratchpadTask({ weekNumber: week.weekNumber, task });
                                   setNotesText(task.notes || '');
                                 }}
+                                className="touch-target"
                                 style={{
                                   background: '#E8DFC8', border: '1px solid #2C1E16',
-                                  borderRadius: '6px', padding: '6px 10px', cursor: 'pointer',
-                                  fontSize: '11px', fontWeight: 'bold', color: '#2C1E16',
-                                  display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap'
+                                  borderRadius: '6px', padding: '8px 12px', cursor: 'pointer',
+                                  fontSize: '12px', fontWeight: 'bold', color: '#2C1E16',
+                                  display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap',
+                                  alignSelf: 'center'
                                 }}
                               >
-                                <FileText size={14} /> Scratchpad
+                                <FileText size={15} /> Scratchpad
                               </button>
                             </div>
                           );
@@ -1052,19 +1128,28 @@ export default function App() {
 
       {/* FLOATING FOCUS ENGINE & POMODORO TIMER DRAWER */}
       <div style={{
-        position: 'fixed', bottom: '20px', right: '20px', zIndex: 100
+        position: 'fixed', bottom: '20px', right: '20px', zIndex: 100,
+        maxWidth: 'calc(100vw - 40px)'
       }}>
         {timerOpen ? (
-          <div style={{
-            background: '#F9F3EB', border: '3px solid #2C1E16', borderRadius: '12px',
-            padding: '16px', boxShadow: '6px 6px 0px #C4B292', width: '300px'
-          }}>
+          <div
+            role="dialog"
+            aria-label="Focus Engine Timer"
+            style={{
+              background: '#F9F3EB', border: '3px solid #2C1E16', borderRadius: '12px',
+              padding: '16px', boxShadow: '6px 6px 0px #C4B292', width: '300px', maxWidth: '100%'
+            }}
+          >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #8C5E3C', paddingBottom: '8px', marginBottom: '12px' }}>
               <span style={{ fontWeight: 'bold', color: '#8C4A27', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px' }}>
                 <Clock size={16} /> Focus Engine Timer
               </span>
-              <button onClick={() => setTimerOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#2C1E16' }}>
-                <X size={18} />
+              <button
+                aria-label="Close Focus Engine Timer"
+                onClick={() => setTimerOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#2C1E16', padding: '4px' }}
+              >
+                <X size={20} />
               </button>
             </div>
 
@@ -1078,8 +1163,9 @@ export default function App() {
                 <button
                   key={p.id}
                   onClick={() => switchTimerPreset(p.id as any)}
+                  className="touch-target"
                   style={{
-                    flex: 1, padding: '4px', fontSize: '10px', fontWeight: 'bold',
+                    flex: 1, padding: '6px 4px', fontSize: '11px', fontWeight: 'bold',
                     border: '1px solid #2C1E16', borderRadius: '4px', cursor: 'pointer',
                     background: activePreset === p.id ? '#8C4A27' : '#E8DFC8',
                     color: activePreset === p.id ? '#FFF8EA' : '#2C1E16'
@@ -1093,7 +1179,7 @@ export default function App() {
             {/* Time Display */}
             <div style={{
               background: '#2C1E16', color: '#F9F3EB', padding: '16px', borderRadius: '8px',
-              textAlign: 'center', fontFamily: 'monospace', fontSize: '36px', fontWeight: 'bold',
+              textAlign: 'center', fontFamily: 'monospace', fontSize: '32px', fontWeight: 'bold',
               letterSpacing: '2px', boxShadow: 'inset 0 0 8px rgba(0,0,0,0.5)'
             }}>
               {formatTimerTime(timeLeft)}
@@ -1103,20 +1189,23 @@ export default function App() {
             <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
               <button
                 onClick={() => setTimerRunning(!timerRunning)}
+                className="touch-target"
                 style={{
-                  flex: 2, padding: '8px', background: timerRunning ? '#C85A32' : '#2D5A27',
+                  flex: 2, padding: '10px', background: timerRunning ? '#C85A32' : '#2D5A27',
                   color: '#FFF8EA', border: '1px solid #2C1E16', borderRadius: '6px',
                   fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center',
-                  justifyContent: 'center', gap: '6px'
+                  justifyContent: 'center', gap: '6px', fontSize: '14px'
                 }}
               >
                 {timerRunning ? <><Pause size={16} /> Pause</> : <><Play size={16} /> Start Focus</>}
               </button>
 
               <button
+                aria-label="Reset Timer"
                 onClick={() => switchTimerPreset(activePreset)}
+                className="touch-target"
                 style={{
-                  flex: 1, padding: '8px', background: '#E8DFC8', color: '#2C1E16',
+                  flex: 1, padding: '10px', background: '#E8DFC8', color: '#2C1E16',
                   border: '1px solid #2C1E16', borderRadius: '6px', fontWeight: 'bold',
                   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}
@@ -1127,7 +1216,9 @@ export default function App() {
           </div>
         ) : (
           <button
+            aria-label="Open Focus Engine Timer"
             onClick={() => setTimerOpen(true)}
+            className="touch-target"
             style={{
               background: '#8C4A27', color: '#FFF8EA', border: '2px solid #2C1E16',
               borderRadius: '30px', padding: '12px 20px', fontWeight: 'bold',
@@ -1140,26 +1231,36 @@ export default function App() {
         )}
       </div>
 
-      {/* FOCUS SCRATCHPAD MODAL */}
+      {/* FOCUS SCRATCHPAD MODAL (Accessible Dialog) */}
       {scratchpadTask && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(44, 30, 22, 0.7)',
-          zIndex: 200, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px'
-        }}>
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="scratchpad-heading"
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(44, 30, 22, 0.75)',
+            zIndex: 200, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px'
+          }}
+        >
           <div style={{
             background: '#F9F3EB', border: '3px solid #2C1E16', borderRadius: '12px',
-            width: '100%', maxWidth: '550px', padding: '20px', boxShadow: '6px 6px 0px #2C1E16'
+            width: '100%', maxWidth: '550px', padding: '20px', boxShadow: '6px 6px 0px #2C1E16',
+            maxHeight: '90vh', overflowY: 'auto'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px dashed #8C5E3C', paddingBottom: '10px', marginBottom: '14px' }}>
-              <h3 style={{ margin: 0, fontSize: '18px', color: '#8C4A27', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <h2 id="scratchpad-heading" style={{ margin: 0, fontSize: '18px', color: '#8C4A27', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <FileText size={18} /> Focus Scratchpad &amp; Proof Notes
-              </h3>
-              <button onClick={() => setScratchpadTask(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#2C1E16' }}>
+              </h2>
+              <button
+                aria-label="Close Scratchpad Modal"
+                onClick={() => setScratchpadTask(null)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#2C1E16', padding: '4px' }}
+              >
                 <X size={20} />
               </button>
             </div>
 
-            <p style={{ margin: '0 0 10px 0', fontSize: '13px', fontWeight: 'bold', color: '#2C1E16' }}>
+            <p style={{ margin: '0 0 10px 0', fontSize: '14px', fontWeight: 'bold', color: '#2C1E16', wordBreak: 'break-word' }}>
               Task: {scratchpadTask.task.title}
             </p>
 
@@ -1168,6 +1269,7 @@ export default function App() {
               onChange={(e) => setNotesText(e.target.value)}
               placeholder="Jot down formulas, recursion trace, K-Map groupings, or notes..."
               rows={8}
+              aria-label="Task Notes Textarea"
               style={{
                 width: '100%', padding: '12px', background: '#FFF8EA', border: '2px solid #2C1E16',
                 borderRadius: '6px', fontSize: '13px', color: '#2C1E16', fontFamily: 'monospace',
@@ -1178,6 +1280,7 @@ export default function App() {
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '14px' }}>
               <button
                 onClick={() => setScratchpadTask(null)}
+                className="touch-target"
                 style={{
                   padding: '8px 16px', background: '#E8DFC8', color: '#2C1E16',
                   border: '1px solid #2C1E16', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer'
@@ -1187,6 +1290,7 @@ export default function App() {
               </button>
               <button
                 onClick={saveScratchpadNotes}
+                className="touch-target"
                 style={{
                   padding: '8px 16px', background: '#2D5A27', color: '#FFF8EA',
                   border: '1px solid #2C1E16', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer'
@@ -1199,29 +1303,40 @@ export default function App() {
         </div>
       )}
 
-      {/* IMPORT / EXPORT DATA MODAL */}
+      {/* IMPORT / EXPORT DATA MODAL (Accessible Dialog) */}
       {ioModalOpen && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(44, 30, 22, 0.7)',
-          zIndex: 200, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px'
-        }}>
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="backup-heading"
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(44, 30, 22, 0.75)',
+            zIndex: 200, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px'
+          }}
+        >
           <div style={{
             background: '#F9F3EB', border: '3px solid #2C1E16', borderRadius: '12px',
-            width: '100%', maxWidth: '550px', padding: '20px', boxShadow: '6px 6px 0px #2C1E16'
+            width: '100%', maxWidth: '550px', padding: '20px', boxShadow: '6px 6px 0px #2C1E16',
+            maxHeight: '90vh', overflowY: 'auto'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px dashed #8C5E3C', paddingBottom: '10px', marginBottom: '14px' }}>
-              <h3 style={{ margin: 0, fontSize: '18px', color: '#8C4A27', fontWeight: 'bold' }}>
+              <h2 id="backup-heading" style={{ margin: 0, fontSize: '18px', color: '#8C4A27', fontWeight: 'bold' }}>
                 📦 Backup &amp; Restore Scrapbook Data
-              </h3>
-              <button onClick={() => setIoModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#2C1E16' }}>
+              </h2>
+              <button
+                aria-label="Close Backup Modal"
+                onClick={() => setIoModalOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#2C1E16', padding: '4px' }}
+              >
                 <X size={20} />
               </button>
             </div>
 
             <div style={{ marginBottom: '16px' }}>
-              <h4 style={{ margin: '0 0 6px 0', fontSize: '14px', color: '#2C1E16' }}>1. Export Scrapbook Progress</h4>
+              <h3 style={{ margin: '0 0 6px 0', fontSize: '14px', color: '#2C1E16' }}>1. Export Scrapbook Progress</h3>
               <button
                 onClick={handleExportJSON}
+                className="touch-target"
                 style={{
                   padding: '8px 16px', background: '#8C4A27', color: '#FFF8EA',
                   border: '1px solid #2C1E16', borderRadius: '6px', fontWeight: 'bold',
@@ -1235,12 +1350,13 @@ export default function App() {
             <hr style={{ border: 'none', borderTop: '1px dashed #8C5E3C', margin: '16px 0' }} />
 
             <div>
-              <h4 style={{ margin: '0 0 6px 0', fontSize: '14px', color: '#2C1E16' }}>2. Import / Restore JSON</h4>
+              <h3 style={{ margin: '0 0 6px 0', fontSize: '14px', color: '#2C1E16' }}>2. Import / Restore JSON</h3>
               <textarea
                 value={importJsonText}
                 onChange={(e) => setImportJsonText(e.target.value)}
                 placeholder="Paste your JSON backup data here..."
                 rows={5}
+                aria-label="Import JSON Data"
                 style={{
                   width: '100%', padding: '10px', background: '#FFF8EA', border: '2px solid #2C1E16',
                   borderRadius: '6px', fontSize: '11px', fontFamily: 'monospace', boxSizing: 'border-box'
@@ -1248,6 +1364,7 @@ export default function App() {
               />
               <button
                 onClick={handleImportJSON}
+                className="touch-target"
                 style={{
                   marginTop: '8px', padding: '8px 16px', background: '#2D5A27', color: '#FFF8EA',
                   border: '1px solid #2C1E16', borderRadius: '6px', fontWeight: 'bold',
@@ -1263,6 +1380,7 @@ export default function App() {
             <div style={{ textAlign: 'right' }}>
               <button
                 onClick={handleResetData}
+                className="touch-target"
                 style={{
                   padding: '6px 12px', background: '#C85A32', color: '#FFF8EA',
                   border: '1px solid #2C1E16', borderRadius: '6px', fontSize: '12px',
