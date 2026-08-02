@@ -353,7 +353,7 @@ export default function App() {
   
   // Timer State
   const [timerOpen, setTimerOpen] = useState(false);
-  const [activePreset, setActivePreset] = useState<'3h' | '15m' | '25m'>('3h');
+  const [activePreset, setActivePreset] = useState<'3h' | '1h' | '8h'>('3h');
   const [timeLeft, setTimeLeft] = useState<number>(10800); // 3 hrs default
   const [timerRunning, setTimerRunning] = useState(false);
 
@@ -419,12 +419,12 @@ export default function App() {
     return () => clearInterval(timer);
   }, [timerRunning, timeLeft]);
 
-  const switchTimerPreset = (preset: '3h' | '15m' | '25m') => {
+  const switchTimerPreset = (preset: '3h' | '1h' | '8h') => {
     setTimerRunning(false);
     setActivePreset(preset);
-    if (preset === '3h') setTimeLeft(10800);
-    if (preset === '15m') setTimeLeft(900);
-    if (preset === '25m') setTimeLeft(1500);
+    if (preset === '3h') setTimeLeft(10800); // 3 Hours (Night Focus / Home)
+    if (preset === '1h') setTimeLeft(3600);  // 1 Hour (Office Micro)
+    if (preset === '8h') setTimeLeft(28800); // 8 Hours (Weekend War)
   };
 
   const formatTimerTime = (seconds: number) => {
@@ -1157,12 +1157,12 @@ export default function App() {
               </button>
             </div>
 
-            {/* Presets */}
+            {/* Presets: 3h (Night Focus/Home), 1h (Office Micro), 8h (Weekend War) */}
             <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
               {[
-                { id: '3h', label: '3h Deep Work' },
-                { id: '15m', label: '15m Micro' },
-                { id: '25m', label: '25m Pomo' },
+                { id: '3h', label: '🌙 3h Night' },
+                { id: '1h', label: '💼 1h Office' },
+                { id: '8h', label: '⚔️ 8h Weekend' },
               ].map(p => (
                 <button
                   key={p.id}
