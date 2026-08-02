@@ -1,0 +1,20 @@
+/* src/index.css */
+@import "tailwindcss";
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: #1a1208;
+  color: #e8d5b0;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  min-height: 100vh;
+}
+
+#root { min-height: 100vh; }
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #1a1208; }
+::-webkit-scrollbar-thumb { background: #5c3d1e; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #7a5230; }
