@@ -329,8 +329,198 @@ const INITIAL_WEEKS: WeekPlan[] = [
 
 const LOCAL_STORAGE_KEY = 'gate_cs_2027_tracker_data';
 
+// --- GATE CS SUBJECT & TOPIC CHECKLIST ---
+type TopicPriority = 'critical' | 'high' | 'medium' | 'low' | 'deprioritized';
+
+interface TopicItem {
+  id: string;
+  name: string;
+  priority: TopicPriority;
+  completed: boolean;
+  iitMadrasPivot?: boolean;
+}
+
+interface SubjectChecklist {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  topics: TopicItem[];
+}
+
+const INITIAL_SUBJECTS: SubjectChecklist[] = [
+  {
+    id: 'digital_logic', name: 'Digital Logic', icon: '⚡', color: '#8C4A27',
+    topics: [
+      { id: 'dl_1', name: 'Boolean Algebra & Theorems', priority: 'critical', completed: false, iitMadrasPivot: true },
+      { id: 'dl_2', name: 'K-Map Minimization (3, 4, 5 var)', priority: 'critical', completed: false, iitMadrasPivot: true },
+      { id: 'dl_3', name: 'Quine-McCluskey (Tabular Method)', priority: 'critical', completed: false, iitMadrasPivot: true },
+      { id: 'dl_4', name: 'Canonical SOP/POS Forms', priority: 'high', completed: false },
+      { id: 'dl_5', name: 'Combinational Circuits (Adders, Mux, Decoders)', priority: 'high', completed: false },
+      { id: 'dl_6', name: 'Sequential Circuits (Flip-Flops, Counters)', priority: 'high', completed: false },
+      { id: 'dl_7', name: 'Flip-Flop Conversions & Excitation Tables', priority: 'high', completed: false },
+      { id: 'dl_8', name: 'State Minimization & State Assignment', priority: 'medium', completed: false },
+      { id: 'dl_9', name: 'Shift Registers', priority: 'medium', completed: false },
+      { id: 'dl_10', name: 'Number Systems & Codes', priority: 'low', completed: false },
+    ]
+  },
+  {
+    id: 'coa', name: 'Computer Organization & Architecture', icon: '🖥️', color: '#4B5267',
+    topics: [
+      { id: 'coa_1', name: 'Hardwired vs Microprogrammed Control Unit', priority: 'critical', completed: false, iitMadrasPivot: true },
+      { id: 'coa_2', name: 'Cache Mapping (Direct, Set-Associative, Fully)', priority: 'critical', completed: false, iitMadrasPivot: true },
+      { id: 'coa_3', name: 'AMAT & Cache Performance Formulas', priority: 'critical', completed: false, iitMadrasPivot: true },
+      { id: 'coa_4', name: 'Pipelining Hazards (Data, Control, Structural)', priority: 'critical', completed: false, iitMadrasPivot: true },
+      { id: 'coa_5', name: 'Pipeline Speedup & Throughput', priority: 'high', completed: false },
+      { id: 'coa_6', name: 'Micro-instruction Formats (Horizontal/Vertical)', priority: 'high', completed: false },
+      { id: 'coa_7', name: 'Instruction Cycle & Addressing Modes', priority: 'high', completed: false },
+      { id: 'coa_8', name: 'I/O Mechanisms (Interrupt, DMA, Polling)', priority: 'medium', completed: false },
+      { id: 'coa_9', name: 'IEEE 754 Floating Point', priority: 'medium', completed: false },
+      { id: 'coa_10', name: 'Secondary Storage (Generic)', priority: 'deprioritized', completed: false },
+    ]
+  },
+  {
+    id: 'dsa', name: 'Data Structures & Algorithms', icon: '🧮', color: '#2D5A27',
+    topics: [
+      { id: 'dsa_1', name: 'Recursion & Stack Frame Analysis', priority: 'critical', completed: false },
+      { id: 'dsa_2', name: 'BST, AVL Trees & Rotations', priority: 'critical', completed: false },
+      { id: 'dsa_3', name: 'Heaps, Heapify & Priority Queues', priority: 'critical', completed: false },
+      { id: 'dsa_4', name: 'Graph Algorithms (BFS, DFS, Dijkstra, Prim, Kruskal)', priority: 'critical', completed: false },
+      { id: 'dsa_5', name: 'Hashing (Open/Closed Addressing, Collision)', priority: 'high', completed: false },
+      { id: 'dsa_6', name: 'Linked Lists, Stacks, Queues', priority: 'high', completed: false },
+      { id: 'dsa_7', name: 'B-Trees & B+ Trees', priority: 'medium', completed: false },
+      { id: 'dsa_8', name: 'Tries & Suffix Trees', priority: 'low', completed: false },
+    ]
+  },
+  {
+    id: 'algo', name: 'Algorithms', icon: '📊', color: '#C85A32',
+    topics: [
+      { id: 'algo_1', name: 'Master Theorem & Recurrence Relations', priority: 'critical', completed: false },
+      { id: 'algo_2', name: 'Dynamic Programming (LCS, LIS, MCM, Knapsack)', priority: 'critical', completed: false },
+      { id: 'algo_3', name: 'Greedy Algorithms & Optimality Proofs', priority: 'critical', completed: false },
+      { id: 'algo_4', name: 'Sorting (Quick, Merge, Heap, Counting, Radix)', priority: 'high', completed: false },
+      { id: 'algo_5', name: 'Divide & Conquer Strategy', priority: 'high', completed: false },
+      { id: 'algo_6', name: 'Asymptotic Notation (Big-O, Theta, Omega)', priority: 'high', completed: false },
+      { id: 'algo_7', name: 'Graph Algorithms (Shortest Path, MST, Topological)', priority: 'high', completed: false },
+      { id: 'algo_8', name: 'NP-Completeness & Reduction', priority: 'medium', completed: false },
+      { id: 'algo_9', name: 'Backtracking & Branch and Bound', priority: 'low', completed: false },
+    ]
+  },
+  {
+    id: 'toc', name: 'Theory of Computation', icon: '🔄', color: '#8C4A27',
+    topics: [
+      { id: 'toc_1', name: 'DFA & NFA Construction & Equivalence', priority: 'critical', completed: false },
+      { id: 'toc_2', name: 'Regular Expressions & Arden Theorem', priority: 'critical', completed: false },
+      { id: 'toc_3', name: 'DFA State Minimization (Myhill-Nerode)', priority: 'critical', completed: false },
+      { id: 'toc_4', name: 'Context Free Grammars & Parse Trees', priority: 'critical', completed: false },
+      { id: 'toc_5', name: 'Pushdown Automata (PDA)', priority: 'high', completed: false },
+      { id: 'toc_6', name: 'Pumping Lemma (Regular & CFL)', priority: 'high', completed: false },
+      { id: 'toc_7', name: 'Turing Machines & Decidability', priority: 'high', completed: false },
+      { id: 'toc_8', name: 'Closure Properties (Reg, CFL, DCFL, RE, REC)', priority: 'high', completed: false },
+      { id: 'toc_9', name: 'Rice Theorem & Halting Problem', priority: 'medium', completed: false },
+      { id: 'toc_10', name: 'Mealy & Moore Machine Conversions', priority: 'medium', completed: false },
+    ]
+  },
+  {
+    id: 'compiler', name: 'Compiler Design', icon: '⚙️', color: '#D49B35',
+    topics: [
+      { id: 'cd_1', name: 'FIRST & FOLLOW Set Computation', priority: 'critical', completed: false },
+      { id: 'cd_2', name: 'LL(1) Parser & Conflict Detection', priority: 'critical', completed: false },
+      { id: 'cd_3', name: 'LR(0), SLR(1), CLR(1), LALR(1) Parsers', priority: 'critical', completed: false },
+      { id: 'cd_4', name: 'Syntax Directed Translation (SDT/SDD)', priority: 'high', completed: false },
+      { id: 'cd_5', name: 'Lexical Analysis & Tokenization', priority: 'high', completed: false },
+      { id: 'cd_6', name: 'Intermediate Code (TAC, Quadruples)', priority: 'medium', completed: false },
+      { id: 'cd_7', name: 'Code Optimization Techniques', priority: 'medium', completed: false },
+      { id: 'cd_8', name: 'Runtime Environments & Activation Records', priority: 'low', completed: false },
+    ]
+  },
+  {
+    id: 'os', name: 'Operating Systems', icon: '💻', color: '#4B5267',
+    topics: [
+      { id: 'os_1', name: 'CPU Scheduling (FCFS, SJF, SRTF, RR, Priority)', priority: 'critical', completed: false },
+      { id: 'os_2', name: 'Process Synchronization & Semaphores', priority: 'critical', completed: false },
+      { id: 'os_3', name: 'Deadlock (Banker Algorithm, Resource Graphs)', priority: 'critical', completed: false },
+      { id: 'os_4', name: 'Virtual Memory & Multilevel Paging', priority: 'critical', completed: false },
+      { id: 'os_5', name: 'Page Replacement (FIFO, LRU, Optimal)', priority: 'critical', completed: false },
+      { id: 'os_6', name: 'TLB & Effective Memory Access Time', priority: 'high', completed: false },
+      { id: 'os_7', name: 'Process States & Fork() Tracing', priority: 'high', completed: false },
+      { id: 'os_8', name: 'Disk Scheduling (SCAN, SSTF, C-SCAN)', priority: 'medium', completed: false },
+      { id: 'os_9', name: 'File Systems & Allocation Methods', priority: 'medium', completed: false },
+      { id: 'os_10', name: 'Threads (User vs Kernel, Multi-threading)', priority: 'medium', completed: false },
+    ]
+  },
+  {
+    id: 'cn', name: 'Computer Networks', icon: '🌐', color: '#2D5A27',
+    topics: [
+      { id: 'cn_1', name: 'TCP Flow & Congestion Control (AIMD)', priority: 'critical', completed: false, iitMadrasPivot: true },
+      { id: 'cn_2', name: 'Distance-Vector & Link-State Routing', priority: 'critical', completed: false, iitMadrasPivot: true },
+      { id: 'cn_3', name: 'IPv4 Fragmentation & CIDR Subnetting', priority: 'critical', completed: false, iitMadrasPivot: true },
+      { id: 'cn_4', name: 'Sliding Window (GBN, Selective Repeat)', priority: 'critical', completed: false },
+      { id: 'cn_5', name: 'Socket API, DNS, HTTP', priority: 'high', completed: false, iitMadrasPivot: true },
+      { id: 'cn_6', name: 'NAT & Port Forwarding', priority: 'high', completed: false, iitMadrasPivot: true },
+      { id: 'cn_7', name: 'OSI & TCP/IP Layer Models', priority: 'high', completed: false },
+      { id: 'cn_8', name: 'Ethernet, CSMA/CD, CSMA/CA', priority: 'medium', completed: false },
+      { id: 'cn_9', name: 'Error Detection (CRC, Checksum, Hamming)', priority: 'medium', completed: false },
+      { id: 'cn_10', name: 'UDP, ARP, DHCP, ICMP', priority: 'deprioritized', completed: false },
+      { id: 'cn_11', name: 'SMTP, FTP, Email Protocols', priority: 'deprioritized', completed: false },
+    ]
+  },
+  {
+    id: 'dbms', name: 'Database Management Systems', icon: '🗃️', color: '#C85A32',
+    topics: [
+      { id: 'db_1', name: 'Relational Algebra (σ, π, ⋈, ÷)', priority: 'critical', completed: false },
+      { id: 'db_2', name: 'Functional Dependencies & Candidate Keys', priority: 'critical', completed: false },
+      { id: 'db_3', name: '3NF & BCNF Decomposition (Lossless, DP)', priority: 'critical', completed: false },
+      { id: 'db_4', name: 'Conflict Serializability & Precedence Graph', priority: 'critical', completed: false },
+      { id: 'db_5', name: '2PL, Strict 2PL & Deadlock in Transactions', priority: 'high', completed: false },
+      { id: 'db_6', name: 'SQL Queries & Nested Queries', priority: 'high', completed: false },
+      { id: 'db_7', name: 'ER Model & Relational Model Mapping', priority: 'high', completed: false },
+      { id: 'db_8', name: 'Indexing (B-Tree, B+Tree, Hashing)', priority: 'medium', completed: false },
+      { id: 'db_9', name: 'Recovery & Logging (ARIES, WAL)', priority: 'medium', completed: false },
+      { id: 'db_10', name: 'Tuple Relational Calculus', priority: 'medium', completed: false },
+    ]
+  },
+  {
+    id: 'maths', name: 'Engineering Mathematics', icon: '📐', color: '#D49B35',
+    topics: [
+      { id: 'ma_1', name: 'Propositional & Predicate Logic', priority: 'critical', completed: false },
+      { id: 'ma_2', name: 'Set Theory, Relations & Functions', priority: 'critical', completed: false },
+      { id: 'ma_3', name: 'Combinatorics & Counting Principles', priority: 'high', completed: false },
+      { id: 'ma_4', name: 'Graph Theory (Euler, Hamilton, Trees, Coloring)', priority: 'high', completed: false },
+      { id: 'ma_5', name: 'Probability & Bayes Theorem', priority: 'high', completed: false },
+      { id: 'ma_6', name: 'Linear Algebra (Matrices, Eigenvalues, Rank)', priority: 'high', completed: false },
+      { id: 'ma_7', name: 'Groups, Rings, Lattices, Partial Orders', priority: 'medium', completed: false },
+      { id: 'ma_8', name: 'Calculus (Limits, Continuity, Integration)', priority: 'medium', completed: false },
+      { id: 'ma_9', name: 'Generating Functions & Recurrences', priority: 'low', completed: false },
+    ]
+  },
+];
+
+const SUBJECTS_STORAGE_KEY = 'gate_cs_2027_subjects_data';
+
 // --- MAIN APP COMPONENT ---
 export default function App() {
+  // Subject Checklist Tray State
+  const [checklistTrayOpen, setChecklistTrayOpen] = useState<boolean>(false);
+  const [activeSubjectId, setActiveSubjectId] = useState<string>('digital_logic');
+  const [subjectPriorityFilter, setSubjectPriorityFilter] = useState<string>('all');
+
+  // Subject Checklist State
+  const [subjects, setSubjects] = useState<SubjectChecklist[]>(() => {
+    try {
+      const saved = localStorage.getItem(SUBJECTS_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load subjects from localStorage', e);
+    }
+    return INITIAL_SUBJECTS;
+  });
+
   const [weeks, setWeeks] = useState<WeekPlan[]>(() => {
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -437,6 +627,34 @@ export default function App() {
 
   // Timer Countdown Logic
   useEffect(() => {
+    try {
+      localStorage.setItem(SUBJECTS_STORAGE_KEY, JSON.stringify(subjects));
+    } catch (e) {
+      console.error('Failed to save subjects to localStorage', e);
+    }
+  }, [subjects]);
+
+  const toggleTopicComplete = useCallback((subjectId: string, topicId: string) => {
+    setSubjects(prev => prev.map(s => {
+      if (s.id !== subjectId) return s;
+      return {
+        ...s,
+        topics: s.topics.map(t => t.id === topicId ? { ...t, completed: !t.completed } : t)
+      };
+    }));
+  }, []);
+
+  const subjectStats = useMemo(() => {
+    const allTopics = subjects.flatMap(s => s.topics);
+    const completedTopics = allTopics.filter(t => t.completed);
+    return {
+      total: allTopics.length,
+      completed: completedTopics.length,
+      pct: allTopics.length > 0 ? Math.round((completedTopics.length / allTopics.length) * 100) : 0
+    };
+  }, [subjects]);
+
+  useEffect(() => {
     let timer: any = null;
     if (timerRunning && timeLeft > 0) {
       timer = setInterval(() => {
@@ -531,7 +749,7 @@ export default function App() {
 
   // Export JSON
   const handleExportJSON = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ weeks }, null, 2));
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ weeks, subjects }, null, 2));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute("href", dataStr);
     downloadAnchor.setAttribute("download", `gate_cs_2027_scrapbook_${new Date().toISOString().split('T')[0]}.json`);
@@ -546,6 +764,9 @@ export default function App() {
       const parsed = JSON.parse(importJsonText);
       if (parsed && Array.isArray(parsed.weeks)) {
         setWeeks(parsed.weeks);
+        if (Array.isArray(parsed.subjects)) {
+          setSubjects(parsed.subjects);
+        }
         setIoModalOpen(false);
         setImportJsonText('');
         alert('✨ Scrapbook progress imported successfully!');
@@ -558,9 +779,11 @@ export default function App() {
   };
 
   const handleResetData = () => {
-    if (window.confirm("Are you sure you want to reset all progress back to the initial 24-week roadmap?")) {
+    if (window.confirm("Are you sure you want to reset all progress?")) {
       setWeeks(INITIAL_WEEKS);
+      setSubjects(INITIAL_SUBJECTS);
       localStorage.removeItem(LOCAL_STORAGE_KEY);
+      localStorage.removeItem(SUBJECTS_STORAGE_KEY);
     }
   };
 
@@ -820,7 +1043,7 @@ export default function App() {
         <div style={{
           background: '#E8DFC8', border: '2px solid #2C1E16', borderRadius: '8px',
           padding: '12px 16px', marginBottom: '24px', display: 'flex',
-          justify: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px',
+          justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px',
           width: '100%', boxSizing: 'border-box'
         }}>
           {/* Zone Filter */}
@@ -851,7 +1074,7 @@ export default function App() {
             ))}
           </div>
 
-          {/* Status Filter & JSON Action buttons */}
+          {/* Status Filter, Syllabus Tray Toggle & JSON Action buttons */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#2C1E16' }}>Status:</span>
             {[
@@ -874,6 +1097,19 @@ export default function App() {
                 {st.label}
               </button>
             ))}
+
+            <button
+              onClick={() => setChecklistTrayOpen(true)}
+              aria-label="Open Syllabus Checklist Tray"
+              className="touch-target"
+              style={{
+                padding: '6px 14px', fontSize: '12px', borderRadius: '6px',
+                background: '#8C4A27', color: '#FFF8EA', border: '1px solid #2C1E16',
+                fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px'
+              }}
+            >
+              <CheckSquare size={14} /> Subject Checklist ({subjectStats.completed}/{subjectStats.total})
+            </button>
 
             <button
               onClick={() => setIoModalOpen(true)}
@@ -1172,6 +1408,313 @@ export default function App() {
         </div>
       </main>
 
+      {/* FIXED RIGHT-EDGE SYLLABUS TRAY TOGGLE BUTTON */}
+      <button
+        onClick={() => setChecklistTrayOpen(true)}
+        aria-label="Open Syllabus Checklist Tray"
+        style={{
+          position: 'fixed', right: 0, top: '40%', zIndex: 90,
+          background: '#8C4A27', color: '#FFF8EA',
+          border: '2px solid #2C1E16', borderRight: 'none',
+          borderRadius: '8px 0 0 8px',
+          padding: '12px 8px',
+          boxShadow: '-3px 3px 0px #2C1E16',
+          cursor: 'pointer',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
+          fontWeight: 'bold', fontSize: '12px',
+          transition: 'all 0.2s ease'
+        }}
+      >
+        <CheckSquare size={18} />
+        <span style={{ writingMode: 'vertical-rl', textOrientation: 'mixed', letterSpacing: '1px', fontSize: '11px' }}>
+          SYLLABUS
+        </span>
+        <span style={{ fontSize: '10px', background: '#D49B35', color: '#2C1E16', padding: '2px 4px', borderRadius: '3px', fontFamily: 'monospace' }}>
+          {subjectStats.completed}/{subjectStats.total}
+        </span>
+      </button>
+
+      {/* ═══════ SIDE TRAY: SUBJECTS & SYLLABUS CHECKLIST ═══════ */}
+      {checklistTrayOpen && (() => {
+        const activeSubject = activeSubjectId ? subjects.find(s => s.id === activeSubjectId) : null;
+
+        const priorityConfig: Record<TopicPriority, { bg: string; color: string; border: string; label: string }> = {
+          critical: { bg: '#FADBD8', color: '#C0392B', border: '#C0392B', label: '🔴 Critical' },
+          high: { bg: '#FDEBD0', color: '#D35400', border: '#D35400', label: '🟠 High' },
+          medium: { bg: '#FEF9E7', color: '#B7950B', border: '#B7950B', label: '🟡 Med' },
+          low: { bg: '#E8F8F5', color: '#1E8449', border: '#1E8449', label: '🟢 Low' },
+          deprioritized: { bg: '#E5E7E9', color: '#616A6B', border: '#616A6B', label: '⚫ Skip' },
+        };
+
+        return (
+          <>
+            {/* Backdrop overlay */}
+            <div
+              onClick={() => setChecklistTrayOpen(false)}
+              style={{
+                position: 'fixed', inset: 0,
+                background: 'rgba(44, 30, 22, 0.5)',
+                zIndex: 300, cursor: 'pointer'
+              }}
+            />
+
+            {/* Side Tray Container */}
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Syllabus Checklist"
+              style={{
+                position: 'fixed', top: 0, right: 0, bottom: 0,
+                width: 'min(440px, 100vw)',
+                background: '#F5EEDC',
+                borderLeft: '3px solid #2C1E16',
+                boxShadow: '-6px 0 24px rgba(44,30,22,0.3)',
+                zIndex: 301,
+                display: 'flex', flexDirection: 'column',
+                animation: 'slideInRight 0.25s ease-out'
+              }}
+            >
+              {/* Theme Header */}
+              <div style={{
+                background: '#E8DFC8', padding: '16px',
+                borderBottom: '2px solid #2C1E16',
+                position: 'sticky', top: 0, zIndex: 2
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  {activeSubject ? (
+                    <button
+                      onClick={() => setActiveSubjectId('')}
+                      className="touch-target"
+                      style={{
+                        background: '#F9F3EB', border: '1px solid #2C1E16',
+                        borderRadius: '6px', padding: '4px 10px', fontSize: '12px',
+                        fontWeight: 'bold', cursor: 'pointer', color: '#2C1E16'
+                      }}
+                    >
+                      ← Back to Subjects
+                    </button>
+                  ) : (
+                    <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: '#8C4A27' }}>
+                      📋 GATE CS 2027 Syllabus
+                    </h2>
+                  )}
+
+                  <button
+                    aria-label="Close side tray"
+                    onClick={() => setChecklistTrayOpen(false)}
+                    className="touch-target"
+                    style={{
+                      background: '#F9F3EB', border: '1px solid #2C1E16',
+                      borderRadius: '6px', cursor: 'pointer', color: '#2C1E16',
+                      padding: '4px 8px', fontSize: '12px', fontWeight: 'bold'
+                    }}
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                {/* Overall Progress */}
+                <div style={{ background: '#F9F3EB', borderRadius: '6px', padding: '8px 12px', border: '1px solid #2C1E16' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#2C1E16', fontWeight: 'bold', marginBottom: '4px' }}>
+                    <span>Total Progress</span>
+                    <span style={{ color: '#2D5A27', fontFamily: 'monospace' }}>{subjectStats.completed}/{subjectStats.total} Topics ({subjectStats.pct}%)</span>
+                  </div>
+                  <div style={{ background: '#D9CBBB', height: '8px', borderRadius: '4px', border: '1px solid #8C5E3C', overflow: 'hidden' }}>
+                    <div style={{ background: 'linear-gradient(90deg, #2D5A27, #D49B35)', height: '100%', width: `${subjectStats.pct}%`, transition: 'width 0.4s ease' }} />
+                  </div>
+                </div>
+              </div>
+
+              {/* VIEW 1: SUBJECT LIST (when activeSubject is null) */}
+              {!activeSubject && (
+                <div style={{ flex: 1, padding: '14px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <p style={{ margin: '0 0 4px 0', fontSize: '12px', color: '#664A38', fontWeight: 'bold' }}>
+                    Select a subject to view its syllabus topics:
+                  </p>
+                  {subjects.map(s => {
+                    const doneCount = s.topics.filter(t => t.completed).length;
+                    const totalCount = s.topics.length;
+                    const pct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
+                    const isDone = doneCount === totalCount;
+
+                    return (
+                      <button
+                        key={s.id}
+                        onClick={() => setActiveSubjectId(s.id)}
+                        className="touch-target"
+                        style={{
+                          background: '#F9F3EB',
+                          border: '2px solid #2C1E16',
+                          borderRadius: '8px',
+                          padding: '12px 14px',
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          boxShadow: '3px 3px 0px #C4B292',
+                          display: 'flex', flexDirection: 'column', gap: '8px',
+                          transition: 'transform 0.1s ease, boxShadow 0.1s ease'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{ fontSize: '20px' }}>{s.icon}</span>
+                            <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#2C1E16' }}>{s.name}</span>
+                          </div>
+                          <span style={{
+                            fontSize: '11px', fontWeight: 'bold', fontFamily: 'monospace',
+                            background: isDone ? '#2D5A27' : '#E8DFC8',
+                            color: isDone ? '#FFF8EA' : '#2C1E16',
+                            padding: '2px 8px', borderRadius: '4px', border: '1px solid #2C1E16'
+                          }}>
+                            {doneCount}/{totalCount}
+                          </span>
+                        </div>
+
+                        <div style={{ background: '#E8DFC8', height: '6px', borderRadius: '3px', border: '1px solid #2C1E16', overflow: 'hidden' }}>
+                          <div style={{ background: isDone ? '#2D5A27' : s.color, height: '100%', width: `${pct}%`, transition: 'width 0.4s ease' }} />
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* VIEW 2: SYLLABUS TOPICS MODAL/PANEL (when activeSubject is selected) */}
+              {activeSubject && (() => {
+                const subjectDone = activeSubject.topics.filter(t => t.completed).length;
+                const subjectTotal = activeSubject.topics.length;
+                const subjectPct = subjectTotal > 0 ? Math.round((subjectDone / subjectTotal) * 100) : 0;
+                const filteredTopics = activeSubject.topics.filter(t => subjectPriorityFilter === 'all' || t.priority === subjectPriorityFilter);
+
+                return (
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                    {/* Active Subject Banner & Priority Filter */}
+                    <div style={{ padding: '12px 14px', background: '#F9F3EB', borderBottom: '2px solid #2C1E16' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '22px' }}>{activeSubject.icon}</span>
+                          <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 'bold', color: '#2C1E16' }}>{activeSubject.name}</h3>
+                        </div>
+                        <span style={{ fontSize: '12px', fontFamily: 'monospace', fontWeight: 'bold', color: '#2D5A27' }}>
+                          {subjectDone}/{subjectTotal} ({subjectPct}%)
+                        </span>
+                      </div>
+
+                      {/* Priority Filters */}
+                      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#664A38', marginRight: '2px' }}>Priority:</span>
+                        {[
+                          { id: 'all', label: 'All' },
+                          { id: 'critical', label: '🔴 Critical' },
+                          { id: 'high', label: '🟠 High' },
+                          { id: 'medium', label: '🟡 Med' },
+                          { id: 'low', label: '🟢 Low' },
+                          { id: 'deprioritized', label: '⚫ Skip' },
+                        ].map(pf => (
+                          <button
+                            key={pf.id}
+                            onClick={() => setSubjectPriorityFilter(pf.id)}
+                            className="touch-target"
+                            style={{
+                              padding: '4px 8px', fontSize: '11px', fontWeight: 'bold',
+                              border: `1px solid ${subjectPriorityFilter === pf.id ? '#2C1E16' : '#8C5E3C'}`,
+                              borderRadius: '4px', cursor: 'pointer',
+                              background: subjectPriorityFilter === pf.id ? '#8C4A27' : '#FFF8EA',
+                              color: subjectPriorityFilter === pf.id ? '#FFF8EA' : '#2C1E16'
+                            }}
+                          >
+                            {pf.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Topic List with NORMAL Checkboxes */}
+                    <div style={{ flex: 1, overflowY: 'auto', padding: '8px 14px' }}>
+                      {filteredTopics.length === 0 ? (
+                        <p style={{ padding: '20px', textAlign: 'center', color: '#664A38', fontStyle: 'italic', fontSize: '13px' }}>
+                          No topics match this priority filter.
+                        </p>
+                      ) : (
+                        filteredTopics.map((topic, idx) => {
+                          const pc = priorityConfig[topic.priority];
+                          return (
+                            <label
+                              key={topic.id}
+                              style={{
+                                display: 'flex', alignItems: 'center', gap: '12px',
+                                padding: '10px 12px',
+                                borderBottom: '1px solid #E8DFC8',
+                                background: topic.completed ? '#EAF2E8' : idx % 2 === 0 ? '#FFF8EA' : '#F9F3EB',
+                                borderRadius: '6px', marginBottom: '4px',
+                                border: '1px solid #D9CBBB',
+                                cursor: 'pointer',
+                                transition: 'background 0.15s ease'
+                              }}
+                            >
+                              {/* Standard Normal HTML Checkbox */}
+                              <input
+                                type="checkbox"
+                                checked={topic.completed}
+                                onChange={() => toggleTopicComplete(activeSubject.id, topic.id)}
+                                style={{
+                                  width: '18px', height: '18px',
+                                  accentColor: '#8C4A27',
+                                  cursor: 'pointer', flexShrink: 0
+                                }}
+                              />
+
+                              {/* Topic Name */}
+                              <span style={{
+                                flex: 1, fontSize: '13px', fontWeight: 'bold',
+                                color: topic.completed ? '#2D5A27' : '#2C1E16',
+                                textDecoration: topic.completed ? 'line-through' : 'none',
+                                textDecorationColor: '#2D5A27',
+                                opacity: topic.completed ? 0.75 : 1
+                              }}>
+                                {topic.name}
+                              </span>
+
+                              {/* Badges */}
+                              <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+                                <span style={{
+                                  background: pc.bg, color: pc.color,
+                                  fontSize: '9px', padding: '2px 6px', borderRadius: '3px',
+                                  fontWeight: 'bold', border: `1px solid ${pc.border}`
+                                }}>
+                                  {pc.label}
+                                </span>
+                                {topic.iitMadrasPivot && (
+                                  <span style={{
+                                    background: '#C85A32', color: '#FFF8EA',
+                                    fontSize: '9px', padding: '2px 6px', borderRadius: '3px',
+                                    fontWeight: 'bold', border: '1px solid #2C1E16'
+                                  }}>
+                                    🔥 IIT-M
+                                  </span>
+                                )}
+                              </div>
+                            </label>
+                          );
+                        })
+                      )}
+                    </div>
+
+                    {/* Footer */}
+                    <div style={{
+                      padding: '10px 14px', borderTop: '2px solid #2C1E16',
+                      background: '#E8DFC8', textAlign: 'center'
+                    }}>
+                      <span style={{ fontSize: '12px', color: '#664A38', fontWeight: 'bold' }}>
+                        {subjectDone === subjectTotal ? '🎉 All topics completed for this subject!' : `${subjectTotal - subjectDone} topics remaining for ${activeSubject.name}`}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          </>
+        );
+      })()} 
       {/* FLOATING FOCUS ENGINE & POMODORO TIMER DRAWER */}
       <div style={{
         position: 'fixed', bottom: '20px', right: '20px', zIndex: 100,
